@@ -1,6 +1,6 @@
 # AquaGuard
 
-AquaGuard is an IoT-based post-filtration water-monitoring, dispensing, and filter-maintenance prototype for a campus fountain. It is not a purification system or a potability certification service.
+AquaGuard is an IoT-based post-filtration water-monitoring, dispensing, and filter-maintenance prototype for a campus fountain.
 
 ## Stack
 
