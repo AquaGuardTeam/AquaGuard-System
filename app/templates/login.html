@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Sign in | AquaGuard{% endblock %}
+{% block body %}
+<main class="login-shell">
+  <section class="login-panel">
+    <div class="brand-lockup">
+      <img src="{{ url_for('static', filename='images/aquaguard-mark.png') }}" alt="AquaGuard">
+      <div><strong>AquaGuard</strong><span>Fountain operations</span></div>
+    </div>
+    <div class="login-copy">
+      <p class="eyebrow">Authorized access</p>
+      <h1>System console</h1>
+      <p>Review readings, maintenance activity, and fountain alerts.</p>
+    </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}<div class="alert alert-{{ category }} py-2">{{ message }}</div>{% endfor %}
+    {% endwith %}
+    <form method="post" class="login-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label for="username">Username</label>
+      <div class="input-shell"><i class="fa-regular fa-user"></i><input id="username" name="username" autocomplete="username" required></div>
+      <label for="password">Password</label>
+      <div class="input-shell"><i class="fa-solid fa-lock"></i><input id="password" name="password" type="password" autocomplete="current-password" required></div>
+      <button class="btn-signin" type="submit">Sign in <i class="fa-solid fa-arrow-right"></i></button>
+    </form>
+  </section>
+  <aside class="login-visual">
+    <img src="{{ url_for('static', filename='images/aquaguard-mark.png') }}" alt="">
+    <div><span>Post-filtration monitoring</span><strong>Fountain status and service records</strong></div>
+  </aside>
+</main>
+{% endblock %}

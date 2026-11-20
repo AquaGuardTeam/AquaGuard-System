@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Readings | AquaGuard{% endblock %}
+{% block body %}
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand-lockup compact" href="{{ url_for('web.dashboard') }}"><img src="{{ url_for('static', filename='images/aquaguard-mark.png') }}" alt="AquaGuard"><div><strong>AquaGuard</strong><span>{{ device.location if device else 'Fountain station' }}</span></div></a>
+    <nav>
+      <a href="{{ url_for('web.dashboard') }}"><i class="fa-solid fa-chart-line"></i><span>Overview</span></a>
+      <a class="active" href="{{ url_for('web.readings_page') }}"><i class="fa-solid fa-droplet"></i><span>Readings</span></a>
+      {% if current_user.is_administrator %}<a href="{{ url_for('web.maintenance_page') }}"><i class="fa-solid fa-screwdriver-wrench"></i><span>Maintenance</span></a>{% endif %}
+      {% if current_user.is_super_admin %}<a href="{{ url_for('web.manage_users') }}"><i class="fa-solid fa-user-shield"></i><span>Accounts</span></a>{% endif %}
+      <a href="{{ url_for('web.alerts_page') }}"><i class="fa-solid fa-bell"></i><span>Alerts</span></a>
+    </nav>
+    <a class="sidebar-user" href="{{ url_for('web.logout') }}"><span class="avatar">{{ current_user.username[0]|upper }}</span><span><strong>{{ current_user.username }}</strong><small>{{ current_user.role|replace('_', ' ')|title }}</small></span><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+  </aside>
+
+  <main class="workspace inner-workspace" id="main-content">
+    <header class="workspace-header"><div><p class="eyebrow">Sensor history</p><h1>Readings</h1></div><span class="live-status"><i></i>Last 24 hours</span></header>
+
+    <section class="page-summary three-column">
+      <article><span class="summary-icon"><i class="fa-solid fa-vial"></i></span><div><small>pH</small><strong>{% if readings %}{{ '%.2f'|format(readings[0].ph) }}{% else %}Unavailable{% endif %}</strong></div></article>
+      <article><span class="summary-icon"><i class="fa-solid fa-water"></i></span><div><small>TDS</small><strong>{% if readings %}{{ '%.1f'|format(readings[0].tds_ppm) }} ppm{% else %}Unavailable{% endif %}</strong></div></article>
+      <article><span class="summary-icon"><i class="fa-solid fa-droplet"></i></span><div><small>Turbidity</small><strong>{% if readings %}{{ '%.2f'|format(readings[0].turbidity_ntu) }} NTU{% else %}Unavailable{% endif %}</strong></div></article>
+    </section>
+
+    <section class="panel table-panel">
+      <header class="table-header"><div><p class="eyebrow">Valid observations</p><h2>24-hour log</h2></div><span class="table-count">{{ readings|length }} records</span></header>
+      {% if readings %}
+      <div class="page-table-wrap">
+        <table class="data-table"><thead><tr><th>Timestamp</th><th>pH</th><th>TDS</th><th>Turbidity</th><th>Record status</th></tr></thead><tbody>
+          {% for reading in readings %}<tr><td>{{ reading.timestamp.strftime('%d %b %Y · %H:%M') }}</td><td><strong>{{ '%.2f'|format(reading.ph) }}</strong></td><td><strong>{{ '%.1f'|format(reading.tds_ppm) }}</strong> ppm</td><td><strong>{{ '%.2f'|format(reading.turbidity_ntu) }}</strong> NTU</td><td><span class="record-status active">{{ reading.validity_status|title }}</span></td></tr>{% endfor %}
+        </tbody></table>
+      </div>
+      {% else %}<div class="empty-state"><i class="fa-solid fa-chart-line"></i><strong>No valid readings</strong><span>Waiting for authenticated ESP32 data.</span></div>{% endif %}
+    </section>
+  </main>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Alerts | AquaGuard{% endblock %}
+{% block body %}
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand-lockup compact" href="{{ url_for('web.dashboard') }}"><img src="{{ url_for('static', filename='images/aquaguard-mark.png') }}" alt="AquaGuard"><div><strong>AquaGuard</strong><span>Fountain operations</span></div></a>
+    <nav>
+      <a href="{{ url_for('web.dashboard') }}"><i class="fa-solid fa-chart-line"></i><span>Overview</span></a>
+      <a href="{{ url_for('web.readings_page') }}"><i class="fa-solid fa-droplet"></i><span>Readings</span></a>
+      {% if current_user.is_administrator %}<a href="{{ url_for('web.maintenance_page') }}"><i class="fa-solid fa-screwdriver-wrench"></i><span>Maintenance</span></a>{% endif %}
+      {% if current_user.is_super_admin %}<a href="{{ url_for('web.manage_users') }}"><i class="fa-solid fa-user-shield"></i><span>Accounts</span></a>{% endif %}
+      <a class="active" href="{{ url_for('web.alerts_page') }}"><i class="fa-solid fa-bell"></i><span>Alerts</span></a>
+    </nav>
+    <a class="sidebar-user" href="{{ url_for('web.logout') }}"><span class="avatar">{{ current_user.username[0]|upper }}</span><span><strong>{{ current_user.username }}</strong><small>{{ current_user.role|replace('_', ' ')|title }}</small></span><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+  </aside>
+
+  <main class="workspace inner-workspace" id="main-content">
+    <header class="workspace-header"><div><p class="eyebrow">System activity</p><h1>Alerts</h1></div><span class="live-status"><i></i>{{ alerts|length }} recorded</span></header>
+
+    <section class="panel table-panel alerts-page-panel">
+      <header class="table-header"><div><p class="eyebrow">Condition and system events</p><h2>Alert log</h2></div></header>
+      {% if alerts %}
+      <div class="alert-list">
+        {% for alert in alerts %}<article class="alert-entry"><span class="alert-dot {{ alert.severity }}"></span><div><strong>{{ alert.message }}</strong><small>{{ alert.created_at.strftime('%d %b %Y · %H:%M') }} · {{ alert.status|title }}</small></div><span class="severity severity-{{ alert.severity }}">{{ alert.severity|title }}</span></article>{% endfor %}
+      </div>
+      {% else %}<div class="empty-state"><i class="fa-solid fa-shield-halved"></i><strong>No alerts recorded</strong><span>Condition and system alerts will appear here.</span></div>{% endif %}
+    </section>
+  </main>
+</div>
+{% endblock %}

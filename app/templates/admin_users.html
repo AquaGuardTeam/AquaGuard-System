@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Staff accounts | AquaGuard{% endblock %}
+{% block body %}
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand-lockup compact" href="{{ url_for('web.dashboard') }}"><img src="{{ url_for('static', filename='images/aquaguard-mark.png') }}" alt="AquaGuard"><div><strong>AquaGuard</strong><span>Saint Benedict Hall</span></div></a>
+    <nav><a href="{{ url_for('web.dashboard') }}"><i class="fa-solid fa-chart-line"></i><span>Overview</span></a><a href="{{ url_for('web.readings_page') }}"><i class="fa-solid fa-droplet"></i><span>Readings</span></a>{% if current_user.is_administrator %}<a href="{{ url_for('web.maintenance_page') }}"><i class="fa-solid fa-screwdriver-wrench"></i><span>Maintenance</span></a>{% endif %}<a class="active" href="{{ url_for('web.manage_users') }}"><i class="fa-solid fa-user-shield"></i><span>Accounts</span></a><a href="{{ url_for('web.alerts_page') }}"><i class="fa-solid fa-bell"></i><span>Alerts</span></a></nav>
+    <a class="sidebar-user" href="{{ url_for('web.logout') }}"><span class="avatar">{{ current_user.username[0]|upper }}</span><span><strong>{{ current_user.username }}</strong><small>{{ current_user.role|replace('_', ' ')|title }}</small></span><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+  </aside>
+
+  <main class="workspace inner-workspace" id="main-content">
+    <header class="workspace-header"><div><p class="eyebrow">Super administrator</p><h1>Staff accounts</h1></div></header>
+    {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="flash-message {{ category }}"><i class="fa-solid {{ 'fa-circle-check' if category == 'success' else 'fa-circle-exclamation' }}"></i>{{ message }}</div>{% endfor %}{% endwith %}
+
+    <section class="accounts-grid">
+      <article class="panel account-form-panel">
+        <header class="table-header"><div><p class="eyebrow">Provision account</p><h2>Add staff account</h2></div></header>
+        <form method="post" class="account-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="field"><label for="username">Username</label><input id="username" name="username" minlength="3" required></div>
+          <div class="field"><label for="password">Temporary password</label><input id="password" name="password" type="password" minlength="12" autocomplete="new-password" required></div>
+          <div class="field"><label for="role">Role</label><select id="role" name="role" required><option value="">Select role</option><option value="admin">Administrator</option><option value="maintenance">Maintenance personnel</option></select></div>
+          <button class="primary-action" type="submit"><i class="fa-solid fa-plus"></i>Create account</button>
+        </form>
+      </article>
+
+      <article class="panel account-directory">
+        <header class="table-header"><div><p class="eyebrow">Authorized accounts</p><h2>Directory</h2></div><span class="table-count">{{ users|length }} accounts</span></header>
+        {% if users %}<div class="account-list">{% for user in users %}<article class="account-row"><span class="account-avatar">{{ user.username[0]|upper }}</span><div><strong>{{ user.username }}</strong><small>{{ user.role|replace('_', ' ')|title }}</small></div><span class="record-status active">Active</span></article>{% endfor %}</div>{% else %}<div class="empty-state"><i class="fa-solid fa-user-shield"></i><strong>No accounts</strong><span>No staff accounts have been provisioned.</span></div>{% endif %}
+      </article>
+    </section>
+  </main>
+</div>
+{% endblock %}

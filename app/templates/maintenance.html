@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Maintenance | AquaGuard{% endblock %}
+{% block body %}
+<div class="app-shell maintenance-page">
+  <aside class="sidebar">
+    <a class="brand-lockup compact" href="{{ url_for('web.dashboard') }}"><img src="{{ url_for('static', filename='images/aquaguard-mark.png') }}" alt="AquaGuard"><div><strong>AquaGuard</strong><span>Saint Benedict Hall</span></div></a>
+    <nav>
+      <a href="{{ url_for('web.dashboard') }}"><i class="fa-solid fa-chart-line"></i><span>Overview</span></a>
+      <a href="{{ url_for('web.readings_page') }}"><i class="fa-solid fa-droplet"></i><span>Readings</span></a>
+      <a class="active" href="{{ url_for('web.maintenance_page') }}" aria-current="page"><i class="fa-solid fa-screwdriver-wrench"></i><span>Maintenance</span></a>
+      {% if current_user.is_super_admin %}<a href="{{ url_for('web.manage_users') }}"><i class="fa-solid fa-user-shield"></i><span>Accounts</span></a>{% endif %}
+      <a href="{{ url_for('web.alerts_page') }}"><i class="fa-solid fa-bell"></i><span>Alerts</span></a>
+    </nav>
+    <a class="sidebar-user" href="{{ url_for('web.logout') }}"><span class="avatar">{{ current_user.username[0]|upper }}</span><span><strong>{{ current_user.username }}</strong><small>{{ current_user.role|replace('_', ' ')|title }}</small></span><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+  </aside>
+
+  <main class="workspace maintenance-workspace" id="main-content">
+    <header class="maintenance-header">
+      <div><p class="eyebrow">Filter records</p><h1>Maintenance</h1></div>
+      {% if filters %}<span class="header-status"><i></i>{{ filters|selectattr('status','equalto','active')|list|length }} active filter</span>{% endif %}
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}<div class="flash-message {{ category }}"><i class="fa-solid {{ 'fa-circle-check' if category == 'success' else 'fa-circle-exclamation' }}"></i>{{ message }}</div>{% endfor %}
+    {% endwith %}
+
+    <section class="maintenance-summary">
+      <article><span class="summary-icon"><i class="fa-solid fa-filter"></i></span><div><span>Registered filters</span><strong>{{ filters|length }}</strong></div></article>
+      <article><span class="summary-icon"><i class="fa-solid fa-toolbox"></i></span><div><span>Service records</span><strong>{{ records|length }}</strong></div></article>
+      <article><span class="summary-icon"><i class="fa-solid fa-calendar-check"></i></span><div><span>Latest service</span><strong>{% if records %}{{ records[0].event_date.strftime('%d %b %Y') }}{% else %}Not recorded{% endif %}</strong></div></article>
+    </section>
+
+    <section class="maintenance-grid">
+      <article class="maintenance-card filter-registration">
+        <header><div><p class="eyebrow">Device filter</p><h2>Register filter</h2></div><i class="fa-solid fa-filter"></i></header>
+        <form method="post" class="maintenance-form filter-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="form_action" value="register_filter">
+                  <div class="field"><label for="filter_type">Filter type</label><input id="filter_type" name="filter_type" required placeholder="Post-filtration cartridge"></div>
+                            <div class="field"><label for="installed_at">Installation date</label><input id="installed_at" name="installed_at" type="date" required></div>
+                  <div class="form-actions"><button class="maintenance-action primary-action" type="submit"><i class="fa-solid fa-plus"></i>Register filter</button></div>
+        </form>
+      </article>
+
+      <article class="maintenance-card service-registration" style="overflow:visible!important">
+        <header><div><p class="eyebrow">Maintenance activity</p><h2>Record service</h2></div><i class="fa-solid fa-screwdriver-wrench"></i></header>
+        <form method="post" class="maintenance-form" style="overflow:visible!important;position:relative!important;z-index:5!important">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="form_action" value="service">
+          <div class="service-fields">
+            <div class="field"><label for="filter_id">Filter</label><select id="filter_id" name="filter_id" required><option value="">Select filter</option>{% for filter in filters %}<option value="{{ filter.id }}">{{ filter.filter_type }} — {{ filter.status|title }}</option>{% endfor %}</select></div>
+            <div class="field"><label for="action">Action</label><select id="action" name="action" required><option value="Inspection">Inspection</option><option value="Service">Service</option><option value="Replaced">Replaced</option><option value="Installed">Installed</option></select></div>
+            <div class="field"><label for="event_date">Service date</label><input id="event_date" name="event_date" type="date" required></div>
+          </div>
+          <div class="field notes-field"><label for="notes">Notes</label><textarea id="notes" name="notes" rows="3" placeholder="Work performed or observed condition"></textarea></div>
+          <div class="service-actions"><button class="maintenance-action secondary-action" id="save-service" type="submit" disabled><i class="fa-solid fa-floppy-disk"></i>Save record</button></div>
+        </form>
+      </article>
+    </section>
+
+    <section class="maintenance-lists">
+      <article class="maintenance-card table-card">
+        <header><div><p class="eyebrow">Installed equipment</p><h2>Filters</h2></div></header>
+        {% if filters %}
+        <div class="maintenance-table-wrap"><table class="maintenance-table"><thead><tr><th>Filter</th><th>Installed</th><th>Status</th></tr></thead><tbody>{% for filter in filters %}<tr><td><strong>{{ filter.filter_type }}</strong></td><td>{{ filter.installed_at.strftime('%d %b %Y') }}</td><td><span class="record-status {{ filter.status }}">{{ filter.status|title }}</span></td></tr>{% endfor %}</tbody></table></div>
+        {% else %}<div class="maintenance-empty"><i class="fa-solid fa-filter-circle-xmark"></i><strong>No filters registered</strong><span>Register the fountain filter to begin maintenance records.</span></div>{% endif %}
+      </article>
+
+      <article class="maintenance-card table-card">
+        <header><div><p class="eyebrow">Recorded activity</p><h2>Service history</h2></div></header>
+        {% if records %}
+        <div class="maintenance-table-wrap"><table class="maintenance-table"><thead><tr><th>Date</th><th>Action</th><th>Notes</th></tr></thead><tbody>{% for record in records %}<tr><td>{{ record.event_date.strftime('%d %b %Y') }}</td><td><strong>{{ record.action }}</strong></td><td>{{ record.notes or '—' }}</td></tr>{% endfor %}</tbody></table></div>
+        {% else %}<div class="maintenance-empty"><i class="fa-solid fa-clipboard"></i><strong>No service records</strong><span>Approved service entries will appear here.</span></div>{% endif %}
+      </article>
+    </section>
+  </main>
+</div>
+<script>
+const today = new Date();
+const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+document.querySelectorAll('input[type="date"]').forEach(input => { input.max = localDate; });
+
+const filterSelect = document.getElementById('filter_id');
+const serviceDate = document.getElementById('event_date');
+const saveService = document.getElementById('save-service');
+function updateSaveState() {
+  if (saveService) saveService.disabled = !(filterSelect && filterSelect.value && serviceDate && serviceDate.value);
+}
+if (filterSelect) filterSelect.addEventListener('change', updateSaveState);
+if (serviceDate) serviceDate.addEventListener('change', updateSaveState);
+updateSaveState();
+</script>
+<style>
+.maintenance-grid>.maintenance-card{height:350px!important}.service-registration .maintenance-form{height:286px!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:66px 84px 44px!important}.service-registration .notes-field{grid-column:1/4!important;grid-row:2!important}.service-registration .notes-field textarea{width:100%!important;height:84px!important}.service-registration .service-actions{grid-column:1/4!important;grid-row:3!important;width:100%!important}.service-registration .secondary-action{width:100%!important;height:44px!important}@media(max-width:700px){.maintenance-grid>.maintenance-card{height:auto!important}.service-registration .maintenance-form{height:auto!important;grid-template-columns:1fr!important;grid-template-rows:auto!important}.service-registration .notes-field,.service-registration .service-actions{grid-column:1!important;grid-row:auto!important}.service-registration .secondary-action{width:100%!important}}
+</style>
+{% endblock %}

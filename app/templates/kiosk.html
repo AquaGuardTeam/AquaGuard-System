@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}AquaGuard Fountain Status{% endblock %}
+{% block styles %}<link href="{{ url_for('static', filename='css/kiosk.css') }}?v=4" rel="stylesheet">{% endblock %}
+{% block body %}
+<main class="kiosk-shell" id="main-content">
+  <header class="kiosk-header"><div class="brand-lockup"><img src="{{ url_for('static', filename='images/aquaguard-mark.png') }}" alt="AquaGuard"><div><strong>AquaGuard</strong><span>{{ device.location if device else 'Fountain station' }}</span></div></div><div class="kiosk-clock" id="kiosk-clock">--:--</div></header>
+  <div class="kiosk-content">
+  {% set condition = assessment.condition if assessment else 'Unknown' %}
+  <section class="kiosk-status {{ condition|lower }}"><span class="kiosk-status-icon"><i class="fa-solid {% if condition == 'Critical' %}fa-triangle-exclamation{% elif condition == 'Warning' %}fa-circle-exclamation{% elif condition == 'Normal' %}fa-circle-check{% else %}fa-circle-question{% endif %}"></i></span><div><small>Fountain status</small><strong>{{ condition }}</strong></div></section>
+  <section class="kiosk-readings">
+    <article><i class="fa-solid fa-vial"></i><span>pH</span><strong>{{ '%.2f'|format(reading.ph) if reading else '—' }}</strong></article>
+    <article><i class="fa-solid fa-water"></i><span>TDS</span><strong>{{ '%.0f'|format(reading.tds_ppm) if reading else '—' }} <small>ppm</small></strong></article>
+    <article><i class="fa-solid fa-droplet"></i><span>Turbidity</span><strong>{{ '%.2f'|format(reading.turbidity_ntu) if reading else '—' }} <small>NTU</small></strong></article>
+  </section>
+  <section class="kiosk-modes">
+    <button type="button" id="cold-mode"><i class="fa-solid fa-snowflake"></i><span>Cold</span></button>
+    <button type="button" id="room-mode"><i class="fa-solid fa-temperature-half"></i><span>Room Temperature</span></button>
+  </section>
+  <div class="dispense-modal" id="dispense-modal" role="dialog" aria-modal="true" aria-labelledby="dispense-title" hidden>
+    <div class="dispense-dialog">
+      <p class="eyebrow">Dispensing</p>
+      <h2 id="dispense-title">Cold water</h2>
+      <div class="dispense-countdown" id="dispense-countdown">10</div>
+      <p id="dispense-status">Water flow is active.</p>
+      <button type="button" id="stop-dispensing" class="stop-dispensing"><i class="fa-solid fa-stop"></i>Stop</button>
+    </div>
+  </div>
+  <p class="kiosk-notice"><i class="fa-solid fa-circle-info"></i> Water status and dispensing controls for this fountain.</p>
+  </div>
+</main>
+<script>
+function updateClock(){const d=new Date();document.getElementById('kiosk-clock').textContent=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}updateClock();setInterval(updateClock,1000);
+async function refreshStatus(){
+  try{
+    const response=await fetch('/api/kiosk/status',{cache:'no-store'});
+    if(!response.ok)return;
+    const data=await response.json();
+    const status=document.querySelector('.kiosk-status');
+    status.className='kiosk-status '+data.condition.toLowerCase();
+    status.querySelector('strong').textContent=data.condition;
+    const cards=document.querySelectorAll('.kiosk-readings article strong');
+    if(cards[0])cards[0].textContent=data.ph == null?'—':Number(data.ph).toFixed(2);
+    if(cards[1])cards[1].innerHTML=data.tds_ppm == null?'—':Number(data.tds_ppm).toFixed(0)+' <small>ppm</small>';
+    if(cards[2])cards[2].innerHTML=data.turbidity_ntu == null?'—':Number(data.turbidity_ntu).toFixed(2)+' <small>NTU</small>';
+  }catch(error){console.warn('Kiosk status unavailable',error)}
+}
+refreshStatus();setInterval(refreshStatus,15000);
+let dispenseTimer=null;
+let remainingSeconds=10;
+const dispenseModal=document.getElementById('dispense-modal');
+const dispenseTitle=document.getElementById('dispense-title');
+const dispenseCountdown=document.getElementById('dispense-countdown');
+const dispenseStatus=document.getElementById('dispense-status');
+
+async function stopDispensing(){
+  if(dispenseTimer){clearInterval(dispenseTimer);dispenseTimer=null}
+  try{await fetch('/api/control/dispensing/stop',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})}catch(error){console.warn('Stop request failed',error)}
+}
+
+async function closeDispenseModal(stopped=false){
+  if(dispenseTimer){clearInterval(dispenseTimer);dispenseTimer=null}
+  await stopDispensing();
+  dispenseStatus.textContent=stopped?'Dispensing stopped.':'Dispensing complete.';
+  dispenseModal.hidden=true;
+  document.querySelectorAll('.kiosk-modes button').forEach(button=>button.classList.remove('selected'));
+}
+
+for(const id of ['cold-mode','room-mode']){document.getElementById(id).addEventListener('click',async function(){
+  const mode=id==='cold-mode'?'cold':'room_temperature';
+  const label=id==='cold-mode'?'Cold water':'Room-temperature water';
+  try{
+    const response=await fetch('/api/control/dispensing',{method:'POST',headers:{'Content-Type':'application/json','X-Kiosk-Mode':'touchscreen'},body:JSON.stringify({mode})});
+    if(!response.ok){alert('Dispensing is unavailable. Verify fountain status and try again.');return}
+    document.querySelectorAll('.kiosk-modes button').forEach(button=>button.classList.remove('selected'));this.classList.add('selected');
+    dispenseTitle.textContent=label;
+    dispenseStatus.textContent='Water flow is active.';
+    remainingSeconds=10;
+    dispenseCountdown.textContent=remainingSeconds;
+    dispenseModal.hidden=false;
+    if(dispenseTimer)clearInterval(dispenseTimer);
+    dispenseTimer=setInterval(async()=>{
+      remainingSeconds-=1;
+      dispenseCountdown.textContent=Math.max(remainingSeconds,0);
+      if(remainingSeconds<=0){await closeDispenseModal(false);dispenseStatus.textContent='Dispensing complete.'}
+    },1000);
+  }catch(error){alert('Unable to send dispensing request.');}
+})}
+
+document.getElementById('stop-dispensing').addEventListener('click',()=>closeDispenseModal(true));
+</script>
+{% endblock %}

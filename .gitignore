@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+ENV/
+
+# Flask / local data
+instance/
+*.db
+*.sqlite
+*.sqlite3
+.flaskenv
+
+# Secrets and environment
+.env
+*.pem
+*.key
+
+# Logs
+*.log
+logs/
+
+# IDE / editors
+.vscode/
+.idea/
+*.code-workspace
+
+# Operating systems
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Build and package artifacts
+build/
+dist/
+*.egg-info/
+node_modules/
+
+# ESP32 / firmware
+*.bin
+*.elf
+firmware/**/.pio/
+firmware/**/build/

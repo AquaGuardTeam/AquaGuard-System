@@ -1,0 +1,401 @@
+/* AquaGuard Maintenance — isolated page layout */
+.maintenance-workspace {
+    padding: 24px 36px 48px;
+    background: #f5f8fa
+}
+
+.maintenance-header {
+    height: 64px !important;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between
+}
+
+.maintenance-header h1 {
+    font-size: 26px;
+    line-height: 1.1;
+    margin: 0
+}
+
+.maintenance-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 2px 0 14px
+}
+
+.maintenance-summary article {
+    height: 78px;
+    border: 1px solid #dde6ec;
+    border-radius: 8px;
+    background: #fff;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px
+}
+
+.summary-icon {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    border-radius: 8px;
+    background: #edf4f7;
+    color: #28759f;
+    display: grid;
+    place-items: center
+}
+
+.maintenance-summary article div {
+    display: flex;
+    flex-direction: column
+}
+
+.maintenance-summary article span {
+    font-size: 11px;
+    color: #718394
+}
+
+.maintenance-summary article strong {
+    font-size: 16px;
+    margin-top: 3px
+}
+
+.maintenance-grid {
+    display: grid;
+    grid-template-columns: minmax(300px, .72fr) minmax(460px, 1.28fr);
+    gap: 14px
+}
+
+.maintenance-card {
+    box-sizing: border-box;
+    height: 320px;
+    border: 1px solid #dde6ec;
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden
+}
+
+.maintenance-card header {
+    height: 64px !important;
+    box-sizing: border-box;
+    border-bottom: 1px solid #edf1f4;
+    padding: 12px 16px !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between
+}
+
+.maintenance-card header h2 {
+    font-size: 17px;
+    margin: 0
+}
+
+.maintenance-card header>i {
+    width: 34px;
+    height: 34px;
+    border-radius: 7px;
+    background: #edf4f7;
+    color: #28759f;
+    display: grid;
+    place-items: center
+}
+
+.filter-registration .maintenance-form {
+    height: 254px !important;
+    box-sizing: border-box;
+    padding: 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important
+}
+
+.filter-registration .field {
+    width: 100% !important
+}
+
+.filter-registration .field label,
+.service-registration .field label {
+    display: block;
+    margin: 0 0 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #5d7180
+}
+
+.filter-registration .field input {
+    width: 100% !important;
+    height: 42px !important;
+    box-sizing: border-box
+}
+
+.filter-registration .form-actions {
+    margin-top: auto !important;
+    width: 100% !important
+}
+
+.filter-registration .primary-action {
+    width: 100% !important;
+    height: 44px !important;
+    margin: 0 !important
+}
+
+.service-registration .maintenance-form {
+    height: 254px !important;
+    box-sizing: border-box;
+    padding: 16px !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) !important;
+    grid-template-rows: 66px 84px 44px !important;
+    gap: 12px !important
+}
+
+.service-registration .field {
+    min-width: 0
+}
+
+.service-registration .field:nth-of-type(1) {
+    grid-column: 1
+}
+
+.service-registration .field:nth-of-type(2) {
+    grid-column: 2
+}
+
+.service-registration .field:nth-of-type(3) {
+    grid-column: 3
+}
+
+.service-registration .notes-field {
+    grid-column: 1/3 !important;
+    grid-row: 2
+}
+
+.service-registration .notes-field textarea {
+    height: 84px !important
+}
+
+.service-registration .secondary-action {
+    grid-column: 3;
+    grid-row: 3;
+    width: 100%;
+    height: 44px
+}
+
+.maintenance-form input,
+.maintenance-form select,
+.maintenance-form textarea {
+    height: 42px !important;
+    box-sizing: border-box;
+    border: 1px solid #dfe7ed;
+    border-radius: 7px;
+    background: #fff;
+    padding: 8px 10px;
+    font: inherit;
+    font-size: 14px
+}
+
+.maintenance-form textarea {
+    resize: vertical
+}
+
+.maintenance-form button {
+    border: 0;
+    border-radius: 7px;
+    background: #173b5c;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800
+}
+
+.maintenance-lists {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 14px
+}
+
+.maintenance-lists .maintenance-card {
+    height: 230px
+}
+
+.maintenance-table-wrap {
+    overflow: auto
+}
+
+.maintenance-table {
+    width: 100%;
+    border-collapse: collapse
+}
+
+.maintenance-table th {
+    height: 38px;
+    text-align: left;
+    padding: 0 16px;
+    border-bottom: 1px solid #edf1f4;
+    background: #fbfcfd;
+    color: #718596;
+    font-size: 10px;
+    text-transform: uppercase
+}
+
+.maintenance-table td {
+    height: 48px;
+    padding: 8px 16px;
+    border-bottom: 1px solid #edf1f4;
+    font-size: 13px
+}
+
+.maintenance-empty {
+    height: 166px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #8597a5
+}
+
+.maintenance-empty i {
+    font-size: 22px;
+    margin-bottom: 8px
+}
+
+.maintenance-empty strong {
+    font-size: 13px;
+    color: #405665
+}
+
+.maintenance-empty span {
+    font-size: 11px;
+    margin-top: 4px
+}
+
+.maintenance-header .header-status {
+    display: none
+}
+
+.flash-message {
+    height: 42px;
+    margin-bottom: 12px;
+    padding: 0 12px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    gap: 8px
+}
+
+.flash-message.success {
+    background: #edf7f3;
+    border: 1px solid #d4e9df;
+    color: #28775d
+}
+
+.flash-message.danger {
+    background: #fbedef;
+    border: 1px solid #efd3d7;
+    color: #9e4350
+}
+
+/* Explicit service-card action layout */
+.service-registration .maintenance-form {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) !important;
+    grid-template-rows: 68px 92px 44px !important;
+    align-items: start !important
+}
+
+.service-registration .notes-field {
+    grid-column: 1/3 !important
+}
+
+.service-registration .service-actions {
+    grid-column: 3 !important;
+    grid-row: 3 !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: flex-end !important
+}
+
+.service-registration .secondary-action {
+    width: 160px !important;
+    max-width: 100% !important;
+    height: 44px !important;
+    margin: 0 !important
+}
+
+.service-registration .field:nth-of-type(1) {
+    grid-column: 1 !important
+}
+
+.service-registration .field:nth-of-type(2) {
+    grid-column: 2 !important
+}
+
+.service-registration .field:nth-of-type(3) {
+    grid-column: 3 !important
+}
+
+@media(max-width:1100px) {
+    .maintenance-grid {
+        grid-template-columns: 1fr
+    }
+
+    .maintenance-lists {
+        grid-template-columns: 1fr
+    }
+
+    .maintenance-card {
+        height: 320px
+    }
+
+    .maintenance-lists .maintenance-card {
+        height: 230px
+    }
+}
+
+@media(max-width:700px) {
+    .maintenance-workspace {
+        padding: 16px 12px 84px
+    }
+
+    .maintenance-summary {
+        grid-template-columns: 1fr
+    }
+
+    .maintenance-summary article {
+        height: 68px
+    }
+
+    .maintenance-header {
+        height: 56px !important
+    }
+
+    .maintenance-card {
+        height: auto
+    }
+
+    .filter-registration .maintenance-form {
+        height: auto !important;
+        min-height: 254px
+    }
+
+    .service-registration .maintenance-form {
+        height: auto !important;
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto !important
+    }
+
+    .service-registration .field:nth-of-type(n),
+    .service-registration .notes-field,
+    .service-registration .secondary-action {
+        grid-column: 1 !important;
+        grid-row: auto !important
+    }
+
+    .service-registration .secondary-action {
+        margin-top: 2px
+    }
+
+    .maintenance-lists {
+        grid-template-columns: 1fr
+    }
+}

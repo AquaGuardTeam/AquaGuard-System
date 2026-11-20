@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Operations | AquaGuard{% endblock %}
+{% block body %}
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand-lockup compact" href="{{ url_for('web.dashboard') }}">
+      <img src="{{ url_for('static', filename='images/aquaguard-mark.png') }}" alt="AquaGuard">
+      <div><strong>AquaGuard</strong><span>Saint Benedict Hall</span></div>
+    </a>
+    <nav>
+      <a class="active" href="{{ url_for('web.dashboard') }}"><i class="fa-solid fa-chart-line"></i><span>Overview</span></a>
+      <a href="{{ url_for('web.readings_page') }}"><i class="fa-solid fa-droplet"></i><span>Readings</span></a>
+      {% if current_user.is_administrator %}<a href="{{ url_for('web.maintenance_page') }}"><i class="fa-solid fa-screwdriver-wrench"></i><span>Maintenance</span></a>{% endif %}
+      {% if current_user.is_super_admin %}<a href="{{ url_for('web.manage_users') }}"><i class="fa-solid fa-user-shield"></i><span>Staff accounts</span></a>{% endif %}
+      <a href="{{ url_for('web.alerts_page') }}"><i class="fa-solid fa-bell"></i><span>Alerts</span></a>
+    </nav>
+    <a class="sidebar-user" href="{{ url_for('web.logout') }}">
+      <span class="avatar">{{ current_user.username[0]|upper }}</span>
+      <span><strong>{{ current_user.username }}</strong><small>{{ current_user.role|title }}</small></span>
+      <i class="fa-solid fa-arrow-right-from-bracket"></i>
+    </a>
+  </aside>
+
+  <main class="workspace" id="main-content">
+    <header class="topbar">
+      <div><p class="eyebrow">Fountain operations</p><h1>Overview</h1></div>
+      <div class="topbar-actions">
+        <span class="live-status {{ device_status }}"><i></i>{{ device_status|title }}</span>
+      </div>
+    </header>
+
+    {% set condition = assessment.condition if assessment else 'Unknown' %}
+    <section class="status-strip {{ condition|lower }}">
+      <div class="status-icon"><i class="fa-solid {% if condition == 'Critical' %}fa-triangle-exclamation{% elif condition == 'Warning' %}fa-circle-exclamation{% elif condition == 'Normal' %}fa-circle-check{% else %}fa-circle-question{% endif %}"></i></div>
+      <div><span>Operational status</span><strong>{{ condition }}</strong></div>
+      <p>{{ assessment.trend_summary if assessment else 'Waiting for valid trend data.' }}</p>
+      <div class="status-time"><small>Last valid reading</small><strong id="last-updated">{{ reading.timestamp.strftime('%d %b %Y · %H:%M') if reading else 'Unavailable' }}</strong></div>
+    </section>
+
+    <section id="readings" class="section-heading"><div><p class="eyebrow">Latest sample</p><h2>Water indicators</h2></div><span class="live-status"><i></i>Last 24 hours</span></section>
+    <section class="metric-grid">
+      <article class="metric-card"><div class="metric-head"><span class="metric-icon ph"><i class="fa-solid fa-vial"></i></span><span>pH</span></div><strong class="metric-value">{{ '%.2f'|format(reading.ph) if reading else 'Unavailable' }}</strong><div class="metric-foot"><span>Post-filtration indicator</span><small>Display only</small></div></article>
+      <article class="metric-card"><div class="metric-head"><span class="metric-icon tds"><i class="fa-solid fa-water"></i></span><span>TDS</span></div><strong class="metric-value">{{ '%.0f'|format(reading.tds_ppm) if reading else 'Unavailable' }}{% if reading %} <small>ppm</small>{% endif %}</strong><div class="metric-foot"><span>Rule-based trend</span><small>TDS</small></div></article>
+      <article class="metric-card"><div class="metric-head"><span class="metric-icon turbidity"><i class="fa-solid fa-droplet-slash"></i></span><span>Turbidity</span></div><strong class="metric-value">{{ '%.2f'|format(reading.turbidity_ntu) if reading else 'Unavailable' }}{% if reading %} <small>NTU</small>{% endif %}</strong><div class="metric-foot"><span>Rule-based trend</span><small>Turbidity</small></div></article>
+    </section>
+
+    <section class="operational-grid">
+      <article class="operation-card">
+        <div class="operation-label"><i class="fa-solid fa-droplet"></i><span>Solenoid valve</span></div>
+        <strong>{% if valve_event %}{{ valve_event.reported_state|replace('_', ' ')|title }}{% else %}Unknown{% endif %}</strong>
+        <small>{% if valve_event %}{{ 'Physical feedback available' if valve_event.feedback_available else 'Physical feedback not available' }}{% else %}No valve event recorded{% endif %}</small>
+      </article>
+      <article class="operation-card">
+        <div class="operation-label"><i class="fa-solid fa-filter-circle-dollar"></i><span>Filter record</span></div>
+        <strong>{{ active_filter.filter_type if active_filter else 'No active filter' }}</strong>
+        <small>{% if active_filter %}Installed {{ active_filter.installed_at.strftime('%d %b %Y') }}{% else %}Register the filter in Maintenance{% endif %}</small>
+      </article>
+      <article class="operation-card">
+        <div class="operation-label"><i class="fa-solid fa-temperature-half"></i><span>Dispensing modes</span></div>
+        <strong>Cold / Room Temperature</strong>
+        <small>Available dispensing selections</small>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel chart-panel">
+        <div class="panel-head"><div><p class="eyebrow">Historical trend</p><h2>Sensor readings</h2></div><div class="legend"><span class="tds"></span>TDS <span class="turb"></span>Turbidity</div></div>
+        <div class="chart-wrap">{% if history_data %}<canvas id="trend-chart"></canvas>{% else %}<div class="chart-empty"><i class="fa-solid fa-chart-line"></i><strong>No valid readings in the last 24 hours</strong><span>Waiting for device telemetry.</span></div>{% endif %}</div>
+      </article>
+      <article id="alerts" class="panel alerts-panel">
+        <div class="panel-head"><div><p class="eyebrow">Recent activity</p><h2>Alerts</h2></div><span class="count-badge">{{ alerts|length }}</span></div>
+        {% if alerts %}{% for alert in alerts %}<div class="alert-row"><span class="alert-dot {{ alert.severity }}"></span><div><strong>{{ alert.message }}</strong><small>{{ alert.created_at.strftime('%b %d, %H:%M') }}</small></div></div>{% endfor %}{% else %}<div class="empty-state"><i class="fa-solid fa-shield-halved"></i><strong>No open alerts</strong><span>System activity is clear.</span></div>{% endif %}
+      </article>
+    </section>
+
+    <footer class="safety-note"><i class="fa-solid fa-circle-info"></i><span>Post-filtration monitoring only. AquaGuard does not certify water potability or replace laboratory testing.</span></footer>
+  </main>
+</div>
+<script>window.AQUAGUARD_HISTORY = {{ history_data|tojson }};</script>
+{% endblock %}
