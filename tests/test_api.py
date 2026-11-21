@@ -1,6 +1,9 @@
 import re
 
+import pytest
+
 from app import create_app
+from app.config import Config
 
 
 def test_kiosk_status_is_read_only_and_limited():
@@ -16,6 +19,20 @@ def test_public_setup_page_does_not_exist():
     app = create_app()
     response = app.test_client().get('/setup')
     assert response.status_code == 404
+
+
+def test_static_assets_are_served_from_public_directory():
+    app = create_app()
+    response = app.test_client().get('/static/css/aquaguard.css')
+    assert response.status_code == 200
+
+
+def test_vercel_rejects_ephemeral_sqlite_database(monkeypatch):
+    monkeypatch.setenv('VERCEL', '1')
+    monkeypatch.setattr(Config, 'SQLALCHEMY_DATABASE_URI', 'sqlite:///aquaguard.db')
+
+    with pytest.raises(RuntimeError, match='persistent external database'):
+        Config.validate()
 
 
 def test_readings_and_alerts_routes_require_login():

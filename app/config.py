@@ -19,3 +19,5 @@ class Config:
     def validate(cls):
         if not cls.SECRET_KEY:
             raise RuntimeError('SECRET_KEY must be set. Copy .env.example and generate a random value.')
+        if os.getenv('VERCEL') and cls.SQLALCHEMY_DATABASE_URI.startswith('sqlite:'):
+            raise RuntimeError('DATABASE_URL must use a persistent external database on Vercel; SQLite storage is ephemeral.')

@@ -56,6 +56,21 @@ The dashboard does not generate or seed sensor data. Unit tests use isolated dat
 
 Use HTTPS behind a production WSGI server and reverse proxy. Set `SECRET_KEY`, a unique `DEVICE_API_TOKEN`, `DATABASE_URL`, and `SESSION_COOKIE_SECURE=true`. Generate new credentials; never reuse local testing credentials. Use the MySQL schema and configure firewall rules so the ESP32 can reach only the API endpoint.
 
+### Deploy to Vercel
+
+Connect this repository to Vercel or run the Vercel CLI from the repository root. Vercel discovers the Flask application in `wsgi.py`; browser assets are in `public/static` and are served at `/static`.
+
+Configure these environment variables in the Vercel project before deploying:
+
+- `SECRET_KEY`: a unique, randomly generated secret.
+- `DATABASE_URL`: a persistent, externally hosted MySQL database connection string, for example `mysql+pymysql://USER:PASSWORD@HOST:3306/aquaguard`. URL-encode special characters in the username or password if required by the provider.
+- `SESSION_COOKIE_SECURE=true`.
+- `SUPER_ADMIN_USERNAME` and `SUPER_ADMIN_PASSWORD`: credentials for the initial super administrator. Use a password of at least 12 characters.
+- `DEVICE_API_TOKEN`: a unique token configured on the ESP32.
+- `KIOSK_API_TOKEN`: set this if the kiosk token is used by your device configuration.
+
+SQLite is suitable for local development only. Vercel function storage is ephemeral, so the app rejects a SQLite `DATABASE_URL` when running on Vercel. Ensure the database provider allows connections from Vercel. The app creates its tables and provisions the initial super administrator when it first connects to an empty database. After deployment, configure the ESP32 to send readings to `https://YOUR-DOMAIN/api/readings`.
+
 ## Safety and scope
 
 - pH, TDS, and turbidity are post-filtration indicators.
