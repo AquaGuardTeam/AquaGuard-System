@@ -49,3 +49,4 @@ node_modules/
 *.elf
 firmware/**/.pio/
 firmware/**/build/
+cloudflared.exe
